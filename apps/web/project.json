@@ -5,5 +5,16 @@
   "projectType": "application",
   "tags": [],
   "// targets": "to see all targets run: nx show project web --web",
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "options": {
+        "dependencies": {
+          "peerDependencies": {
+            "shared-types": "*"
+          }
+        }
+      }
+    }
+  }
 }
