@@ -27,7 +27,11 @@
     "types": [
       "jest",
       "node"
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@web/src/*": ["./src/*"],
+    }
   },
   "include": [
     "**/*.js",
