@@ -1,4 +1,4 @@
-import Test from "@web/src/components/test";
+import Test from "@web/components/test";
 
 
 export default function Index() {
@@ -13,7 +13,7 @@ export default function Index() {
         <div className="container">
           <div id="welcome">
             <h1>
-              <Test/>
+              <Test name={"testName"} password={"pass"}/>
               <span> Hello there, </span>
               Welcome web 👋
             </h1>

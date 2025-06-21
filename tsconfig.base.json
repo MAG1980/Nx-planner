@@ -18,10 +18,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@web/src/*": [
+      "@web/*": [
         "apps/web/src/*"
       ],
-      "@api/src/*": [
+      "@api/*": [
         "apps/api/src/*"
       ],
       "@shared-types": [

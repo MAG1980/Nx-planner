@@ -1,6 +1,5 @@
-import {Controller, Get, Query} from '@nestjs/common';
-import {AppService} from './app.service';
-import {CreateUserDto} from "@shared-types";
+import {Controller, Get} from '@nestjs/common';
+import {AppService} from "@api/app/app.service";
 
 @Controller()
 export class AppController {
@@ -8,8 +7,7 @@ export class AppController {
   }
 
   @Get()
-  getData(@Query() createUserDto: CreateUserDto) {
-    console.log({createUserDto})
+  getData() {
     return this.appService.getData();
   }
 }
