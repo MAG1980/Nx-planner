@@ -1,2 +1,3 @@
+export { CreateUserDto } from './lib/user/dto/create-user.dto';
+
 export * from './lib/shared-types';
-// export {CreateUserDto} from '@api/user/dto';

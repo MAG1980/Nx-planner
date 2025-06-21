@@ -30,6 +30,7 @@ module.exports = composePlugins(withNx(), (config) => {
     alias: {
       ...(config.resolve?.alias || {}),
       '@api/src/*': resolve(__dirname, 'src'),
+      '@shared-types': resolve(__dirname, '../../libs/shared-types/src/index.ts'),
     },
   };
 

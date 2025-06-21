@@ -17,6 +17,7 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@web/src/*': ['apps/web/src*'],
+      '@shared-types': ['../../libs/shared-types/src/index.ts']
     };
     return config;
   },
