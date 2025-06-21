@@ -10,6 +10,7 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
+/* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace Cypress {
     interface Chainable<Subject> {
