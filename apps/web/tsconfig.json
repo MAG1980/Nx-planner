@@ -28,11 +28,6 @@
       "jest",
       "node"
     ],
-    "baseUrl": ".",
-    "paths": {
-      "@web/src/*": ["./src/*"],
-      "@shared-types": ["../../libs/shared-types/src/index.ts"]
-    }
   },
   "include": [
     "**/*.js",
