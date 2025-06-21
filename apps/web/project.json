@@ -7,7 +7,7 @@
   "// targets": "to see all targets run: nx show project web --web",
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
+      "executor": "nx:noop",
       "options": {
         "dependencies": {
           "peerDependencies": {
