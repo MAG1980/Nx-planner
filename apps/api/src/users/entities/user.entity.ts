@@ -1,4 +1,3 @@
-import { UserData } from '@shared-types';
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +6,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'users' })
-export class User implements UserData {
+export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -17,7 +16,8 @@ export class User implements UserData {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  //Предотвращает случайное извлечение свойства при запросах.
+  @Column({ select: false })
   password: string;
 
   @Column({ nullable: true })

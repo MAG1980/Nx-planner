@@ -3,5 +3,5 @@ export interface UserData {
   name: string;
   email: string;
   refreshToken?: string;
-  createdAt: Date;
+  createdAt?: Date;
 }

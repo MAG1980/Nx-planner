@@ -1,3 +1,2 @@
-export { CreateUserDto } from './lib/user/dto/create-user.dto';
-
-export * from './lib';
+export * from './lib/auth';
+export { CreateUserDto } from './lib/users/dto/create-user.dto';
