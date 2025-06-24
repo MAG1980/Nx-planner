@@ -1,18 +1,30 @@
 //@ts-check
 
- 
-const {composePlugins, withNx} = require('@nx/next');
+const { composePlugins, withNx } = require('@nx/next');
 
 /**
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
+  reactStrictMode: true,
+
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${
+          process.env.API_PROXY_URL || 'http://localhost:5000'
+        }/api/:path*`,
+      },
+    ];
+  },
+
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {
     svgr: false,
   },
-  webpack: (config, {isServer}) => {
+  webpack: (config, { isServer }) => {
     // Добавляем алиасы
     config.resolve.alias = {
       ...config.resolve.alias,
