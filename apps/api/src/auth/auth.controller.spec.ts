@@ -10,13 +10,32 @@ import { CreateUserDto } from '@shared-types';
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
+  let cookieValues: Record<string, any> = {};
 
   const mockResponse = {
     cookie: jest.fn(),
     clearCookie: jest.fn(),
   } as unknown as Response;
 
+  let cookieMockResponse = {
+    cookie: jest.fn((name: string, value: any, options?: any) => {
+      cookieValues[name] = { value, options };
+    }),
+    clearCookie: jest.fn((name: string) => {
+      delete cookieValues[name];
+    }),
+  };
+
   beforeEach(async () => {
+    cookieValues = {}; // Очищаем сохранённые cookie перед каждым тестом
+    cookieMockResponse = {
+      cookie: jest.fn((name: string, value: any, options?: any) => {
+        cookieValues[name] = { value, options };
+      }),
+      clearCookie: jest.fn((name: string) => {
+        delete cookieValues[name];
+      }),
+    };
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
@@ -39,6 +58,13 @@ describe('AuthController', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
 
   describe('signup', () => {
     it('should create user and return access token', async () => {
@@ -69,12 +95,7 @@ describe('AuthController', () => {
       expect(mockResponse.cookie).toHaveBeenCalledWith(
         'refresh_token',
         'refresh-token',
-        {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        }
+        { ...cookieOptions }
       );
       expect(result).toEqual({ accessToken: 'access-token' });
     });
@@ -105,12 +126,7 @@ describe('AuthController', () => {
       expect(mockResponse.cookie).toHaveBeenCalledWith(
         'refresh_token',
         'refresh-token',
-        {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        }
+        { ...cookieOptions }
       );
       expect(result).toEqual({ accessToken: 'access-token' });
     });
@@ -165,12 +181,7 @@ describe('AuthController', () => {
       expect(mockResponse.cookie).toHaveBeenCalledWith(
         'refresh_token',
         'new-refresh-token',
-        {
-          httpOnly: true,
-          secure: false,
-          sameSite: 'lax',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
-        }
+        { ...cookieOptions }
       );
       expect(result).toEqual({ accessToken: 'new-access-token' });
     });
@@ -225,6 +236,83 @@ describe('AuthController', () => {
         AuthController.prototype.refreshTokens
       );
       expect(metadata).toBe(200);
+    });
+  });
+
+  describe('setRefreshTokenCookie', () => {
+    it('should set refresh token cookie with correct value and options', () => {
+      const refreshToken = 'test-refresh-token-123';
+
+      // Вызываем приватный метод
+      (controller as any).setRefreshTokenCookie(
+        cookieMockResponse as unknown as Response,
+        refreshToken
+      );
+
+      // Проверяем, что cookie был установлен
+      expect(cookieMockResponse.cookie).toHaveBeenCalled();
+
+      // Проверяем значение и параметры cookie
+      expect(cookieValues['refresh_token']).toBeDefined();
+      expect(cookieValues['refresh_token'].value).toBe(refreshToken);
+      expect(cookieValues['refresh_token'].options).toEqual({
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    });
+
+    it('should set secure flag when in production', () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+
+      try {
+        process.env.NODE_ENV = 'production';
+        const refreshToken = 'secure-token';
+
+        (controller as any).setRefreshTokenCookie(
+          cookieMockResponse as unknown as Response,
+          refreshToken
+        );
+
+        expect(cookieValues['refresh_token'].options.secure).toBe(true);
+      } finally {
+        process.env.NODE_ENV = originalNodeEnv;
+      }
+    });
+  });
+
+  // Пример теста для logout, который проверяет очистку cookie
+  describe('logout', () => {
+    it('should clear refresh_token cookie', async () => {
+      // Сначала устанавливаем cookie
+      (controller as any).setRefreshTokenCookie(
+        cookieMockResponse as unknown as Response,
+        'test-token'
+      );
+      expect(cookieValues['refresh_token']).toBeDefined();
+
+      // Мокируем authService.logout
+      controller['authService'] = {
+        logout: jest.fn().mockResolvedValue(undefined),
+      } as any;
+
+      // Мокируем request с user
+      const mockRequest = {
+        user: { id: 'user-id' },
+      };
+
+      // Вызываем logout
+      await controller.logout(
+        mockRequest as any,
+        cookieMockResponse as unknown as Response
+      );
+
+      // Проверяем что cookie был очищен
+      expect(cookieMockResponse.clearCookie).toHaveBeenCalledWith(
+        'refresh_token'
+      );
+      expect(cookieValues['refresh_token']).toBeUndefined();
     });
   });
 });
