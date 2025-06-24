@@ -1,14 +1,12 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
-import Cookies from 'js-cookie';
-import { useRouter } from 'next/router';
-import { jwtDecode } from 'jwt-decode';
+import { ReactNode, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { JwtPayload } from '@shared-types';
-import { AuthContextInterface } from './interfaces/auth-context.interface';
+import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+import Cookies from 'js-cookie';
+import { AuthContext } from '@web/contexts/auth.context';
 
-const AuthContext = createContext<AuthContextInterface>(null!);
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<JwtPayload | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const router = useRouter();
@@ -18,7 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         await refreshToken();
       } catch (error) {
-        console.log('Not authenticated');
+        console.log('Not authenticated: ', error);
       }
     };
     initializeAuth();
@@ -87,8 +85,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
 }
