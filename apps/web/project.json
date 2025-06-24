@@ -5,6 +5,7 @@
   "projectType": "application",
   "tags": [],
   "// targets": "to see all targets run: nx show project web --web",
+  "implicitDependencies": ["shared-types"],
   "targets": {
     "build": {
       "executor": "nx:noop",
