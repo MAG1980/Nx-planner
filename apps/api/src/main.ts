@@ -36,6 +36,15 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  // Настройка CORS
+  app.enableCors({
+    origin: 'http://localhost:3000', // Разрешить только фронтенд на 3000 порту
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true, // Если используются куки/авторизация
+    allowedHeaders: 'Content-Type, Authorization',
+  });
+
   const port = process.env.PORT || 5000;
   await app.listen(port);
   Logger.log(
