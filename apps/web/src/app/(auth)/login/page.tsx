@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@web/hooks/useAuth';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
     } catch (err) {
-      setError('Invalid email or password');
+      setError(`Invalid email or password: ${err}`);
     }
   };
 
@@ -39,6 +40,17 @@ export default function LoginPage() {
             {error}
           </div>
         )}
+        <div className="flex items-center justify-between">
+          <div className="text-sm">
+            <span className="text-gray-600">Don&#39;t have an account? </span>
+            <Link
+              href="/signup"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Sign up
+            </Link>
+          </div>
+        </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>

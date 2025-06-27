@@ -2,7 +2,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from '@api/auth/auth.service';
-import { ValidatedUser } from '@api/auth/interfaces/validatedUser.interface';
+import { UserPayload } from '@api/auth/types/user-payload.type';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -24,7 +24,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
    * @param email
    * @param password
    */
-  async validate(email: string, password: string): Promise<ValidatedUser> {
+  async validate(email: string, password: string): Promise<UserPayload> {
     if (password === '') {
       throw new UnauthorizedException('Password is required');
     }

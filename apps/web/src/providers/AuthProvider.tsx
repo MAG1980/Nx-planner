@@ -1,30 +1,27 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { JwtPayload } from '@shared-types';
-import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
 import { AuthContext } from '@web/contexts/auth.context';
+import api, {
+  setAxiosAccessToken,
+  setAxiosUnauthorizedHandler,
+} from '@web/lib/api';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<JwtPayload | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const router = useRouter();
 
+  // Обновляем токен в Axios при изменении
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        await refreshToken();
-      } catch (error) {
-        console.log('Not authenticated: ', error);
-      }
-    };
-    initializeAuth();
-  }, []);
+    setAxiosAccessToken(accessToken);
+  }, [accessToken]);
 
-  const refreshToken = async () => {
+  const refreshToken = useCallback(async () => {
     try {
-      const response = await axios.post(
+      const response = await api.post(
         '/api/auth/refresh',
         {},
         { withCredentials: true }
@@ -32,26 +29,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { accessToken } = response.data;
       setAccessToken(accessToken);
 
-      // Декодируем JWT для получения информации о пользователе
       const jwtPayload = jwtDecode(accessToken) as unknown as JwtPayload;
       setUser({
         sub: jwtPayload.sub,
         name: jwtPayload.name,
         email: jwtPayload.email,
       });
+      return accessToken;
     } catch (error) {
-      console.error(
-        'Ошибка при декодировании accessToken и обновлении данных пользователя:',
-        error
-      ); // Логирование
-      throw new Error(
-        'Не удалось декодировать accessToken. Данные пользователя не обновлены.'
-      ); // Можно модифицировать ошибку
+      setUser(null);
+      setAccessToken(null);
+      Cookies.remove('refresh_token');
+      router.push('/login');
+      throw error;
     }
-  };
+  }, [router]);
+
+  // Устанавливаем обработчик для 401 ошибок
+  useEffect(() => {
+    // Передаём callback refreshToken
+    setAxiosUnauthorizedHandler(refreshToken);
+  }, [refreshToken]);
 
   const login = async (email: string, password: string) => {
-    const response = await axios.post(
+    const response = await api.post(
       '/api/auth/login',
       { email, password },
       { withCredentials: true }
@@ -68,11 +69,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await axios.post('/api/auth/logout', {}, { withCredentials: true });
-    setUser(null);
-    setAccessToken(null);
-    Cookies.remove('refresh_token');
-    router.push('/login');
+    try {
+      await api.post('api/auth/logout', {}, { withCredentials: true });
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+      Cookies.remove('refresh_token');
+      router.push('/login');
+    }
   };
 
   const value = {

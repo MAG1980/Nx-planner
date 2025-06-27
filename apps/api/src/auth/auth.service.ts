@@ -10,7 +10,6 @@ import { User } from '@api/users/entities/user.entity';
 import { UsersService } from '@api/users/users.service';
 import { CreateUserDto, JwtPayload, Tokens, UserData } from '@shared-types';
 import { verify } from 'argon2';
-import { ValidatedUser } from '@api/auth/interfaces/validatedUser.interface';
 import { UserPayload } from '@api/auth/types/user-payload.type';
 import refreshJwtConfig from '@api/auth/configs/refresh-jwt.config';
 import { ConfigType } from '@nestjs/config';
@@ -51,7 +50,7 @@ export class AuthService {
 
   async login(user: UserPayload): Promise<Tokens> {
     const tokens = await this.getTokens(user);
-    await this.usersService.updateRefreshToken(user.id, tokens.refreshToken);
+    await this.usersService.updateRefreshToken(user.sub, tokens.refreshToken);
     return tokens;
   }
 
@@ -73,18 +72,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     const { id, email, name } = user;
-    const tokens = await this.getTokens({ id, email, name });
+    const tokens = await this.getTokens({ sub: id, email, name });
     await this.usersService.updateRefreshToken(user.id, tokens.refreshToken);
     return tokens;
   }
 
-  private async getTokens({
-    id: userId,
-    email,
-    name,
-  }: UserPayload): Promise<Tokens> {
+  private async getTokens({ sub, email, name }: UserPayload): Promise<Tokens> {
     const jwtPayload: JwtPayload = {
-      sub: userId,
+      sub,
       email,
       name,
     };
@@ -109,7 +104,7 @@ export class AuthService {
   async validateLocalUser(
     email: string,
     password: string
-  ): Promise<ValidatedUser> {
+  ): Promise<UserPayload> {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       //В целях повышения безопасности в тексте ошибки нежелательно сообщать о причине, по которой аутентификация провалилась.
@@ -117,7 +112,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordMatched = verify(user.password, password);
+    console.log({ password, userPassword: user.password });
+
+    // await обязателен, т. к. в противном случае всегда isPasswordMatched == Promise == true.
+    const isPasswordMatched = await verify(user.password, password);
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -125,6 +123,6 @@ export class AuthService {
     //В случае успешной аутентификации возвращаем данные пользователя.
     //Ни в коем случае не возвращаем пароль после успешной аутентификации.
     //Т.к. данные пользователя в итоге будут добавлены к request.
-    return { id: user.id, name: user.name };
+    return { sub: user.id, name: user.name, email: user.email };
   }
 }

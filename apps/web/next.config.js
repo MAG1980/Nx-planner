@@ -18,6 +18,17 @@ const nextConfig = {
       },
     ];
   },
+  /*
+  //Может потребоваться при возникновении проблемы с CORS.
+    headers: async () => [
+    {
+      source: '/api/:path*',
+      headers: [
+        { key: 'Access-Control-Allow-Origin', value: '*' },
+        // Другие CORS-заголовки
+      ],
+    },
+  ],*/
 
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup

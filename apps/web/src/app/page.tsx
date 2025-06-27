@@ -1,4 +1,5 @@
 import Test from '@web/components/test';
+import Link from 'next/link';
 
 export default function Index() {
   /*
@@ -37,6 +38,7 @@ export default function Index() {
                 <span>You&apos;re up and running</span>
               </h2>
               <a href="#commands"> What&apos;s next? </a>
+              <Link href="/dashboard"> Go to Dashboard! </Link>
             </div>
             <div className="logo-container">
               <svg

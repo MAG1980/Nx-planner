@@ -28,7 +28,17 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOneBy({ email });
+    return this.usersRepository.findOne({
+      where: { email },
+      select: ['id', 'name', 'email', 'password'],
+    });
+  }
+
+  async findPasswordByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOneOrFail({
+      where: { email },
+      select: ['password'],
+    });
   }
 
   async updateRefreshToken(id: string, refreshToken: string): Promise<void> {

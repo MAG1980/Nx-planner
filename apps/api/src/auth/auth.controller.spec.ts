@@ -6,11 +6,28 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CreateUserDto } from '@shared-types';
+import { UserPayload } from '@api/auth/types/user-payload.type';
+import { Request } from 'express';
+import { JwtRefreshPayload } from '@api/auth/types/jwt-refresh-payload.type';
+
+interface CookieOptions {
+  maxAge?: number;
+  httpOnly?: boolean;
+  secure?: boolean;
+  path?: string;
+  domain?: string;
+  sameSite?: 'strict' | 'lax' | 'none';
+}
+
+interface CookieValue {
+  value: string;
+  options?: CookieOptions; // используем конкретный тип
+}
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
-  let cookieValues: Record<string, any> = {};
+  let cookieValues: Record<string, CookieValue> = {};
 
   const mockResponse = {
     cookie: jest.fn(),
@@ -18,7 +35,7 @@ describe('AuthController', () => {
   } as unknown as Response;
 
   let cookieMockResponse = {
-    cookie: jest.fn((name: string, value: any, options?: any) => {
+    cookie: jest.fn((name: string, value: string, options?: CookieOptions) => {
       cookieValues[name] = { value, options };
     }),
     clearCookie: jest.fn((name: string) => {
@@ -29,9 +46,11 @@ describe('AuthController', () => {
   beforeEach(async () => {
     cookieValues = {}; // Очищаем сохранённые cookie перед каждым тестом
     cookieMockResponse = {
-      cookie: jest.fn((name: string, value: any, options?: any) => {
-        cookieValues[name] = { value, options };
-      }),
+      cookie: jest.fn(
+        (name: string, value: string, options?: CookieOptions) => {
+          cookieValues[name] = { value, options };
+        }
+      ),
       clearCookie: jest.fn((name: string) => {
         delete cookieValues[name];
       }),
@@ -65,6 +84,16 @@ describe('AuthController', () => {
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
+
+  const mockUser: UserPayload = {
+    sub: '1',
+    name: 'Test User',
+    email: 'test@example.com',
+  };
+
+  const mockRequest = {
+    user: mockUser,
+  } as jest.Mocked<Request> & { user: UserPayload };
 
   describe('signup', () => {
     it('should create user and return access token', async () => {
@@ -103,12 +132,6 @@ describe('AuthController', () => {
 
   describe('login', () => {
     it('should login user and return access token', async () => {
-      const mockUser = {
-        id: '1',
-        name: 'Test User',
-        email: 'test@example.com',
-      };
-
       const mockTokens = {
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
@@ -116,11 +139,7 @@ describe('AuthController', () => {
 
       jest.spyOn(authService, 'login').mockResolvedValue(mockTokens);
 
-      const mockRequest = {
-        user: mockUser,
-      };
-
-      const result = await controller.login(mockRequest as any, mockResponse);
+      const result = await controller.login(mockRequest, mockResponse);
 
       expect(authService.login).toHaveBeenCalledWith(mockUser);
       expect(mockResponse.cookie).toHaveBeenCalledWith(
@@ -134,19 +153,9 @@ describe('AuthController', () => {
 
   describe('logout', () => {
     it('should logout user and clear refresh token cookie', async () => {
-      const mockUser = {
-        id: '1',
-        name: 'Test User',
-        email: 'test@example.com',
-      };
-
-      const mockRequest = {
-        user: mockUser,
-      };
-
       jest.spyOn(authService, 'logout').mockResolvedValue(undefined);
 
-      await controller.logout(mockRequest as any, mockResponse);
+      await controller.logout(mockRequest, mockResponse);
 
       expect(authService.logout).toHaveBeenCalledWith('1');
       expect(mockResponse.clearCookie).toHaveBeenCalledWith('refresh_token');
@@ -165,14 +174,11 @@ describe('AuthController', () => {
           id: '1',
           refreshToken: 'old-refresh-token',
         },
-      };
+      } as unknown as jest.Mocked<Request> & { user: JwtRefreshPayload };
 
       jest.spyOn(authService, 'refreshTokens').mockResolvedValue(mockTokens);
 
-      const result = await controller.refreshTokens(
-        mockRequest as any,
-        mockResponse
-      );
+      const result = await controller.refreshTokens(mockRequest, mockResponse);
 
       expect(authService.refreshTokens).toHaveBeenCalledWith(
         '1',

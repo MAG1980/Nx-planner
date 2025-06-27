@@ -16,19 +16,22 @@ import { JwtRefreshGuard } from '@api/auth/guards/jwt-refresh.guard';
 import { CreateUserDto } from '@shared-types';
 import { RequestUserPayload } from '@api/auth/types/request-user-payload.type';
 import { RequestJwtRefreshPayload } from '@api/auth/types/request-jwt-refresh-payload.type';
+import { SkipAuth } from '@api/auth/decorators/skip-auth.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @SkipAuth()
   @Post('signup')
   async signup(
     @Body() createUserDto: CreateUserDto,
     @Res({ passthrough: true }) res: Response
   ): Promise<{ accessToken: string }> {
+    console.log({ createUserDto });
     const user = await this.authService.signup(createUserDto);
     const { accessToken, refreshToken } = await this.authService.login({
-      id: user.id,
+      sub: user.id,
       name: user.name,
       email: user.email,
     });
@@ -38,6 +41,7 @@ export class AuthController {
     return { accessToken };
   }
 
+  @SkipAuth()
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -45,6 +49,7 @@ export class AuthController {
     @Req() req: RequestUserPayload,
     @Res({ passthrough: true }) res: Response
   ): Promise<{ accessToken: string }> {
+    console.log({ user: req.user });
     const { accessToken, refreshToken } = await this.authService.login(
       req.user
     );
@@ -62,7 +67,8 @@ export class AuthController {
     @Req() req: RequestUserPayload,
     @Res({ passthrough: true }) res: Response
   ): Promise<void> {
-    await this.authService.logout(req.user.id);
+    console.log({ logoutUser: req.user });
+    await this.authService.logout(req.user.sub);
 
     res.clearCookie('refresh_token');
   }
@@ -75,7 +81,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.authService.refreshTokens(
-      req.user.id,
+      req.user.sub,
       req.user.refreshToken
     );
 

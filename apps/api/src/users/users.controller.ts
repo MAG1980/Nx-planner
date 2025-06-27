@@ -1,4 +1,12 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
+import { SkipAuth } from '@api/auth/decorators/skip-auth.decorator';
 
-@Controller('user')
-export class UsersController {}
+@Controller('users')
+export class UsersController {
+  @SkipAuth()
+  @Get('test')
+  getTest() {
+    console.log('test');
+    return 'test';
+  }
+}
