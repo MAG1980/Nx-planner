@@ -12,11 +12,11 @@ import { Response } from 'express';
 import { AuthService } from '@api/auth/auth.service';
 import { LocalAuthGuard } from '@api/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from '@api/auth/guards/jwt-auth.guard';
-import { JwtRefreshGuard } from '@api/auth/guards/jwt-refresh.guard';
 import { CreateUserDto } from '@shared-types';
 import { RequestUserPayload } from '@api/auth/types/request-user-payload.type';
 import { RequestJwtRefreshPayload } from '@api/auth/types/request-jwt-refresh-payload.type';
 import { SkipAuth } from '@api/auth/decorators/skip-auth.decorator';
+import { JwtRefreshGuard } from '@api/auth/guards/jwt-refresh.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -73,13 +73,18 @@ export class AuthController {
     res.clearCookie('refresh_token');
   }
 
+  // Отключение проверки наличия валидного accessToken, т.к. в AppModule включен глобальный APP_GUARD = JwtAuthGuard.
+  @SkipAuth()
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshTokens(
+    // @Cookies('refresh_token') cookieRefreshToken: string,
     @Req() req: RequestJwtRefreshPayload,
     @Res({ passthrough: true }) res: Response
   ): Promise<{ accessToken: string }> {
+    // console.log({cookieRefreshToken})
+
     const { accessToken, refreshToken } = await this.authService.refreshTokens(
       req.user.sub,
       req.user.refreshToken
@@ -96,6 +101,7 @@ export class AuthController {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+      domain: 'localhost', // для localhost можно не указывать
     });
   }
 }
