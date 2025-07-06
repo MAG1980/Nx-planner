@@ -7,6 +7,7 @@ import { AuthContext } from '@web/contexts/auth.context';
 import api, {
   setAxiosAccessToken,
   setAxiosUnauthorizedHandler,
+  setRefreshFailed,
 } from '@web/lib/api';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -52,20 +53,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshToken]);
 
   const login = async (email: string, password: string) => {
-    const response = await api.post(
-      '/api/auth/login',
-      { email, password },
-      { withCredentials: true }
-    );
-    const { accessToken } = response.data;
-    setAccessToken(accessToken);
+       const response = await api.post(
+        '/api/auth/login',
+        { email, password },
+        { withCredentials: true }
+      );
+      const { accessToken } = response.data;
+      setAccessToken(accessToken);
 
-    const jwtPayload = jwtDecode(accessToken) as unknown as JwtPayload;
-    setUser({
-      sub: jwtPayload.sub,
-      name: jwtPayload.name,
-      email: jwtPayload.email,
-    });
+      const jwtPayload = jwtDecode(accessToken) as unknown as JwtPayload;
+      setUser({
+        sub: jwtPayload.sub,
+        name: jwtPayload.name,
+        email: jwtPayload.email,
+      });
+
+      // Сбрасываем флаг при успешном логине
+      setRefreshFailed(false);
   };
 
   const logout = async () => {
