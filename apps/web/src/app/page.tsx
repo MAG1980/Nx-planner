@@ -13,7 +13,7 @@ export default function Index() {
         <div className="container">
           <div id="welcome">
             <h1>
-              <Test name={'testName'} password={'pass'} email={''} />
+              <Test />
               <span> Hello there, </span>
               Welcome web 👋
             </h1>

@@ -1,10 +1,10 @@
-import { JwtPayload } from '@shared-types';
+import { AuthState } from '@web/contexts/interfaces/auth-state.interface';
+import { Dispatch, SetStateAction } from 'react';
 
 export interface AuthContextInterface {
-  user: JwtPayload | null;
-  accessToken: string | null;
+  authState: AuthState;
+  setAuthState: Dispatch<SetStateAction<AuthState>> | null;
+  isAuthenticated: () => boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
-  isAuthenticated: boolean;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@web/hooks/useAuth';
@@ -10,13 +10,16 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, authState } = useAuth();
   const router = useRouter();
 
-  if (isAuthenticated) {
-    router.push('/dashboard');
-    return null;
-  }
+  // Если изменение состояния (например, навигация) должно происходить после рендера, перенеси его в useEffect.
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push('/dashboard');
+    }
+    console.log({ accessToken: authState.accessToken });
+  }, [isAuthenticated()]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
