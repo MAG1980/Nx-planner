@@ -38,7 +38,10 @@ export default function Index() {
                 <span>You&apos;re up and running</span>
               </h2>
               <a href="#commands"> What&apos;s next? </a>
-              <Link href="/dashboard"> Go to Dashboard! </Link>
+              <div className="flex flex-col">
+                <Link href="/dashboard"> Go to Dashboard! </Link>
+                <Link href="/login"> Login </Link>
+              </div>
             </div>
             <div className="logo-container">
               <svg

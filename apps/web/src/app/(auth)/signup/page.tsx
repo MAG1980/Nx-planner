@@ -17,7 +17,7 @@ export default function SignupPage() {
   const { login, isAuthenticated } = useAuth();
   const router = useRouter();
 
-  if (isAuthenticated) {
+  if (isAuthenticated()) {
     router.push('/dashboard');
     return null;
   }
