@@ -42,7 +42,8 @@ const Test: FC = () => {
   return (
     <>
       <div className="text-2xl text-center">TestComponent</div>
-      <div>{data}</div>
+      {!!data && <div>{data}</div>}
+      {!!error && <div>{error}</div>}
     </>
   );
 };

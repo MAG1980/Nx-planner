@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login, isAuthenticated, authState } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const router = useRouter();
 
   // Если изменение состояния (например, навигация) должно происходить после рендера, перенеси его в useEffect.
@@ -18,7 +18,6 @@ export default function LoginPage() {
     if (isAuthenticated()) {
       router.push('/dashboard');
     }
-    console.log({ accessToken: authState.accessToken });
   }, [isAuthenticated()]);
 
   const handleSubmit = async (e: FormEvent) => {

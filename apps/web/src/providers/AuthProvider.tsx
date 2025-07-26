@@ -1,5 +1,4 @@
-import { ReactNode, useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { ReactNode, useEffect, useState } from 'react';
 import { JwtPayload } from '@shared-types';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
@@ -8,7 +7,6 @@ import { AuthState } from '@web/contexts/interfaces/auth-state.interface';
 import axios, { AxiosError } from 'axios';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const [authState, setAuthState] = useState<AuthState>({
     accessToken: null,
     api: null,
@@ -193,7 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: null,
       }));
       Cookies.remove('refresh_token');
-      router.push('/login');
+      // router.push('/login');
     }
   };
 

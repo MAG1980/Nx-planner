@@ -1,5 +1,6 @@
 import Test from '@web/components/test';
-import Link from 'next/link';
+import { UserName } from '@web/components/UserName';
+import { Navbar } from '@web/components/Navbar';
 
 export default function Index() {
   /*
@@ -14,7 +15,7 @@ export default function Index() {
           <div id="welcome">
             <h1>
               <Test />
-              <span> Hello there, </span>
+              <UserName />
               Welcome web 👋
             </h1>
           </div>
@@ -38,10 +39,7 @@ export default function Index() {
                 <span>You&apos;re up and running</span>
               </h2>
               <a href="#commands"> What&apos;s next? </a>
-              <div className="flex flex-col">
-                <Link href="/dashboard"> Go to Dashboard! </Link>
-                <Link href="/login"> Login </Link>
-              </div>
+              <Navbar />
             </div>
             <div className="logo-container">
               <svg
