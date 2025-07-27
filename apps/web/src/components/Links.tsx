@@ -2,10 +2,11 @@
 import Link from 'next/link';
 import { useAuth } from '@web/hooks/useAuth';
 
-export const Navbar = () => {
+export const Links = () => {
   const { isAuthenticated, logout } = useAuth();
   return (
     <div className="flex flex-col">
+      <a href="#commands"> What&apos;s next? </a>
       <Link href="/dashboard"> Go to Dashboard! </Link>
       {isAuthenticated() ? (
         <button
