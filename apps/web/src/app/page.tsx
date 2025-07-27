@@ -4,6 +4,7 @@ import { MiddleContent } from '@web/components/MiddleContent';
 import { NextSteps } from '@web/components/NextSteps';
 import { Footer } from '@web/components/Footer';
 import Test from '@web/components/test';
+import { DefaultNullContent } from '@web/components/DefaultNullContent';
 
 export default function Index() {
   /*
@@ -37,6 +38,8 @@ export default function Index() {
         </div>
         <Logo />
       </div>
+
+      <DefaultNullContent />
 
       <MiddleContent />
 

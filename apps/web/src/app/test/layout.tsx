@@ -3,17 +3,27 @@ import Link from 'next/link';
 import { ReactNode } from 'react';
 import { useAuth } from '@web/hooks/useAuth';
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
+export default function AuthLayout({
+  login,
+  content,
+}: {
+  children: ReactNode;
+  login: ReactNode;
+  content: ReactNode;
+}) {
   const { isAuthenticated, logout } = useAuth();
   return (
-    <>
-      <nav className="flex justify-between my-3">
-        <Link className="bg-green-300 p-3 px-5 mx-5 rounded-lg" href="/">
+    <div className="min-h-[432px] flex justify-between items-center w-full">
+      <nav className="w-4/12  flex flex-col items-center justify-center my-3">
+        <Link
+          className="w-full text-center bg-green-300 my-1 p-3 px-5 mx-5 rounded-lg"
+          href="/"
+        >
           Home Page
         </Link>
         {isAuthenticated() ? (
           <button
-            className="bg-green-300 p-3 px-5 mx-5 rounded-lg"
+            className="w-full text-center bg-green-300 my-1 p-3 px-5 mx-5 rounded-lg"
             onClick={() => logout()}
           >
             Logout
@@ -21,21 +31,21 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         ) : (
           <>
             <Link
-              className="bg-green-300 p-3 px-5 mx-5 rounded-lg"
-              href="/test/login"
+              className="w-full text-center bg-green-300 my-1 p-3 px-5 mx-5 rounded-lg"
+              href="/auth/login"
             >
               Login
             </Link>
             <Link
-              className="bg-green-300 p-3 px-5 mx-5 rounded-lg"
-              href="/test/signup"
+              className="w-full text-center bg-green-300 my-1 p-3 px-5 mx-5 rounded-lg"
+              href="/auth/signup"
             >
               Signup
             </Link>
           </>
         )}
       </nav>
-      {children}
-    </>
+      <div className="w-7/12">{isAuthenticated() ? content : login}</div>
+    </div>
   );
 }

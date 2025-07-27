@@ -14,7 +14,6 @@ export const Links = () => {
           className="bg-white text-gray-600 rounded-xl mt-6 py-3.5 px-8 text-left"
           onClick={() => logout()}
         >
-          {' '}
           Logout
         </button>
       ) : (
