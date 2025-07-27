@@ -3,6 +3,7 @@ import { Logo } from '@web/components/Logo';
 import { MiddleContent } from '@web/components/MiddleContent';
 import { NextSteps } from '@web/components/NextSteps';
 import { Footer } from '@web/components/Footer';
+import Test from '@web/components/test';
 
 export default function Index() {
   /*
@@ -31,6 +32,7 @@ export default function Index() {
             <span>You&apos;re up and running</span>
           </h2>
 
+          <Test />
           <Links />
         </div>
         <Logo />

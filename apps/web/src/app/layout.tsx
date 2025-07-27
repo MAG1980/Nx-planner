@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={inter.className}>
         <RootProvider>
           <div className="wrapper">
-            <div className="container">
+            <div className="container flex flex-col items-center">
               <RootLayoutHeader />
               {children}
             </div>

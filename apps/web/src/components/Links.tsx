@@ -8,6 +8,7 @@ export const Links = () => {
     <div className="flex flex-col">
       <a href="#commands"> What&apos;s next? </a>
       <Link href="/dashboard"> Go to Dashboard! </Link>
+      <Link href="/test">Test Page</Link>
       {isAuthenticated() ? (
         <button
           className="bg-white text-gray-600 rounded-xl mt-6 py-3.5 px-8 text-left"
@@ -17,7 +18,7 @@ export const Links = () => {
           Logout
         </button>
       ) : (
-        <Link href="/login"> Login </Link>
+        <Link href="/auth/login"> Login </Link>
       )}
     </div>
   );

@@ -30,8 +30,10 @@ export default function LoginPage() {
   };
 
   return (
-    <LoginForm
-      {...{ error, handleSubmit, email, setEmail, password, setPassword }}
-    />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <LoginForm
+        {...{ error, handleSubmit, email, setEmail, password, setPassword }}
+      />
+    </div>
   );
 }
