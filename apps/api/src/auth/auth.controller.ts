@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -17,10 +18,21 @@ import { RequestUserPayload } from '@api/auth/types/request-user-payload.type';
 import { RequestJwtRefreshPayload } from '@api/auth/types/request-jwt-refresh-payload.type';
 import { SkipAuth } from '@api/auth/decorators/skip-auth.decorator';
 import { JwtRefreshGuard } from '@api/auth/guards/jwt-refresh.guard';
+import { GoogleAuthGuard } from '@api/auth/guards/google-auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  private setRefreshTokenCookie(res: Response, refreshToken: string): void {
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+      domain: 'localhost', // для localhost можно не указывать
+    });
+  }
 
   @SkipAuth()
   @Post('signup')
@@ -95,13 +107,26 @@ export class AuthController {
     return { accessToken };
   }
 
-  private setRefreshTokenCookie(res: Response, refreshToken: string): void {
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
-      domain: 'localhost', // для localhost можно не указывать
-    });
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  //Авторизация через Google OAuth c стратегией GoogleStrategy
+  //Перенаправляет пользователя на страницу аутентификации Google
+  //В случае успешной валидации в GoogleStrategy сервером Google будет выполнен редирект на 'auth/google/callback'
+  ///accessToken, refreshToken в данном случе генерируются сервером Google
+  //accessToken, refreshToken и данные профиля пользователя будут переданы в 'auth/google/callback
+  googleLogin() {
+    // return this.authService.googleLogin();
+  }
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  //На данном этапе перед доступом к этому маршруту в GoogleStrategy будет вызываться метод 'validate'
+  //Получает данные от Google OAuth
+  async googleCallback(
+    @Req() req: RequestUserPayload,
+    @Res({ passthrough: true }) res: Response
+  ): Promise<{ accessToken: string }> {
+    console.log({ user: req.user });
+    return this.login(req, res);
   }
 }

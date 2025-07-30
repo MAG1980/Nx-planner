@@ -25,6 +25,9 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
    * @param password
    */
   async validate(email: string, password: string): Promise<UserPayload> {
+    // При регистрации с использованием OAuth пароль по-умолчанию устанавливается равным пустой строке.
+    // Чтобы избежать возможности предоставления несанкционированного доступа,
+    // проверяем, что введённый при попытке аутентификации пароль не равен пустой строке.
     if (password === '') {
       throw new UnauthorizedException('Password is required');
     }

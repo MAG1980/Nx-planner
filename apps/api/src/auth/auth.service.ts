@@ -125,4 +125,14 @@ export class AuthService {
     //Т.к. данные пользователя в итоге будут добавлены к request.
     return { sub: user.id, name: user.name, email: user.email };
   }
+
+  async validateGoogleUser(googleUser: CreateUserDto): Promise<UserData> {
+    //Проверка на существование пользователя в БД
+    const user = await this.usersService.findByEmail(googleUser.email);
+    if (user) {
+      return;
+    }
+    //Создаём и возвращаем нового пользователя, если он не был найден в БД
+    return this.usersService.create(googleUser);
+  }
 }
