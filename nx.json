@@ -82,5 +82,14 @@
     "version": {
       "preVersionCommand": "npx nx run-many -t build"
     }
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "useDaemonProcess": true,
+        "cacheableOperations": ["build", "test", "lint", "e2e", "serve", "dev"]
+      }
+    }
   }
 }
