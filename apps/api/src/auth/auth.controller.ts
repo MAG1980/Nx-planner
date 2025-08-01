@@ -108,6 +108,7 @@ export class AuthController {
   }
 
   @UseGuards(GoogleAuthGuard)
+  @SkipAuth()
   @Get('google/login')
   //Авторизация через Google OAuth c стратегией GoogleStrategy
   //Перенаправляет пользователя на страницу аутентификации Google
@@ -119,6 +120,7 @@ export class AuthController {
   }
 
   @UseGuards(GoogleAuthGuard)
+  @SkipAuth()
   @Get('google/callback')
   //На данном этапе перед доступом к этому маршруту в GoogleStrategy будет вызываться метод 'validate'
   //Получает данные от Google OAuth
