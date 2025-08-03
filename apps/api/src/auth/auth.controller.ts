@@ -1,13 +1,15 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
-  HttpStatus,
-  Post,
+  HttpStatus, Inject,
+  Post, Query,
   Req,
   Res,
-  UseGuards,
+  UnauthorizedException,
+  UseGuards
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from '@api/auth/auth.service';
@@ -19,10 +21,18 @@ import { RequestJwtRefreshPayload } from '@api/auth/types/request-jwt-refresh-pa
 import { SkipAuth } from '@api/auth/decorators/skip-auth.decorator';
 import { JwtRefreshGuard } from '@api/auth/guards/jwt-refresh.guard';
 import { GoogleAuthGuard } from '@api/auth/guards/google-auth.guard';
+import { ConfigService } from '@nestjs/config';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import {Cache} from 'cache-manager'
+import { uuidv7 } from 'uuidv7';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private configService: ConfigService,
+    private authService: AuthService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {}
 
   private setRefreshTokenCookie(res: Response, refreshToken: string): void {
     res.cookie('refresh_token', refreshToken, {
@@ -127,8 +137,56 @@ export class AuthController {
   async googleCallback(
     @Req() req: RequestUserPayload,
     @Res({ passthrough: true }) res: Response
-  ): Promise<{ accessToken: string }> {
-    console.log({ user: req.user });
-    return this.login(req, res);
+  ): Promise<void> {
+    if (!req.user) {
+      throw new UnauthorizedException('Google authentication failed');
+    }
+
+    const { accessToken, refreshToken } = await this.authService.login(
+      req.user
+    );
+
+    this.setRefreshTokenCookie(res, refreshToken);
+
+    // Сохраняем токен во временное хранилище
+    const tokenId = uuidv7();
+    await this.cacheManager.set(`token:${tokenId}`, accessToken,  1000 );
+
+    // Редирект на внутренний эндпоинт NestJS,
+    // т.к. при перенаправлении тело ответа отбрасывается,
+    // а клиент ожидает получить accessToken именно в теле ответа.
+    const serverUrl = await this.configService.get<string>('SERVER_URL');
+    return res.redirect(302, `${serverUrl}/api/auth/oauth-callback?tokenId=${tokenId}`);
+  }
+
+  @SkipAuth()
+  @Get('oauth-callback')
+  async handleOAuthCallback(
+    @Query('tokenId') tokenId: string,
+    @Res() res: Response
+  ) {
+    // Получаем accessToken из кеша
+    const accessToken = await this.cacheManager.get<string>(`token:${tokenId}`);
+    console.log({oc:accessToken});
+
+    if (!accessToken) {
+      throw new BadRequestException('Token expired or invalid');
+    }
+
+    // Вариант 1: Отправляем JSON
+    return res.json({ accessToken });
+
+    // ИЛИ Вариант 2: Рендерим HTML с токеном
+    // return res.send(`
+    //   <html>
+    //     <script>
+    //       window.opener.postMessage({
+    //         type: 'oauth-success',
+    //         accessToken: '${accessToken}'
+    //       }, '*');
+    //       window.close();
+    //     </script>
+    //   </html>
+    // `);
   }
 }

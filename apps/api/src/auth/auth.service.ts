@@ -49,6 +49,7 @@ export class AuthService {
   }
 
   async login(user: UserPayload): Promise<Tokens> {
+    console.log({loginUser:user});
     const tokens = await this.getTokens(user);
     await this.usersService.updateRefreshToken(user.sub, tokens.refreshToken);
     return tokens;
@@ -130,7 +131,8 @@ export class AuthService {
     //Проверка на существование пользователя в БД
     const user = await this.usersService.findByEmail(googleUser.email);
     if (user) {
-      return;
+      console.log({user});
+      return user;
     }
     //Создаём и возвращаем нового пользователя, если он не был найден в БД
     return this.usersService.create(googleUser);

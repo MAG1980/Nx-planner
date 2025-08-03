@@ -41,6 +41,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     // Данные, указанные в user будут добавлены в request.user,
     // поэтому нужно быть абсолютно уверенным, что user не содержит password.
     const user = { sub: id, name, email };
+
     //Данные пользователя будут добавлены в request.user,
     // поэтому нужно быть абсолютно уверенным, что user не содержит password.
     done(null, user);
