@@ -3,20 +3,8 @@ import Link from 'next/link';
 import { useAuth } from '@web/hooks/useAuth';
 
 export const Links = () => {
-  const { isAuthenticated, logout, authState, setAuthState } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
-  const loginWithGoogle = async () => {
-    try {
-      if (authState.api && setAuthState) {
-        const { accessToken } = (await authState.api.get(
-          `/api/auth/google/login`
-        )) as { accessToken: string };
-        setAuthState((prevState) => ({ ...prevState, accessToken }));
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
   return (
     <div className="flex flex-col">
       <a href="#commands"> What&apos;s next? </a>
@@ -32,12 +20,12 @@ export const Links = () => {
       ) : (
         <>
           <Link href="/auth/login"> Login </Link>
-          <button
+          <Link
             className="bg-green-600 text-white rounded-xl mt-6 py-3.5 px-8 text-left"
-            onClick={loginWithGoogle}
+            href="/api/auth/google/login"
           >
             Sign In With Goggle
-          </button>
+          </Link>
         </>
       )}
     </div>

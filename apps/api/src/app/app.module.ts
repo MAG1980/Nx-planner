@@ -34,7 +34,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     CacheModule.register({
       isGlobal: true,
       // Для in-memory кэша (по умолчанию)
-      ttl: 5, // Время жизни кэша в секундах
+      ttl: 5, // Время жизни кэша в миллисекундах
       max: 10, // Максимальное количество элементов в кэше
 
       /*   // Для Redis (опционально)

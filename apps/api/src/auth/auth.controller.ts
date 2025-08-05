@@ -4,12 +4,14 @@ import {
   Controller,
   Get,
   HttpCode,
-  HttpStatus, Inject,
-  Post, Query,
+  HttpStatus,
+  Inject,
+  Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from '@api/auth/auth.service';
@@ -23,7 +25,7 @@ import { JwtRefreshGuard } from '@api/auth/guards/jwt-refresh.guard';
 import { GoogleAuthGuard } from '@api/auth/guards/google-auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import {Cache} from 'cache-manager'
+import { Cache } from 'cache-manager';
 import { uuidv7 } from 'uuidv7';
 
 @Controller('auth')
@@ -150,13 +152,21 @@ export class AuthController {
 
     // Сохраняем токен во временное хранилище
     const tokenId = uuidv7();
-    await this.cacheManager.set(`token:${tokenId}`, accessToken,  1000 );
+    await this.cacheManager.set(`token:${tokenId}`, accessToken, 10000);
+
+    const savedAccessToken = await this.cacheManager.get<string>(
+      `token:${tokenId}`
+    );
+    console.log({ savedAccessToken });
 
     // Редирект на внутренний эндпоинт NestJS,
     // т.к. при перенаправлении тело ответа отбрасывается,
     // а клиент ожидает получить accessToken именно в теле ответа.
-    const serverUrl = await this.configService.get<string>('SERVER_URL');
-    return res.redirect(302, `${serverUrl}/api/auth/oauth-callback?tokenId=${tokenId}`);
+    const frontendUrl = await this.configService.get<string>('FRONTEND_URL');
+    return res.redirect(
+      302,
+      `${frontendUrl}/auth/oauth-success?tokenId=${tokenId}`
+    );
   }
 
   @SkipAuth()
@@ -165,14 +175,18 @@ export class AuthController {
     @Query('tokenId') tokenId: string,
     @Res() res: Response
   ) {
+    console.log({ tokenId });
     // Получаем accessToken из кеша
     const accessToken = await this.cacheManager.get<string>(`token:${tokenId}`);
-    console.log({oc:accessToken});
+    console.log({ oc: accessToken });
 
     if (!accessToken) {
       throw new BadRequestException('Token expired or invalid');
     }
 
+    // Очистка кэш после первого успешного запроса на аутентификацию в целях безопасности:
+    // для исключения возможности повторного запроса accessToken при краже tokenId.
+    await this.cacheManager.del(`token:${tokenId}`);
     // Вариант 1: Отправляем JSON
     return res.json({ accessToken });
 
@@ -181,7 +195,7 @@ export class AuthController {
     //   <html>
     //     <script>
     //       window.opener.postMessage({
-    //         type: 'oauth-success',
+    //         type: 'oauth-oauth-success',
     //         accessToken: '${accessToken}'
     //       }, '*');
     //       window.close();
