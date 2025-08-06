@@ -26,6 +26,12 @@ export const Links = () => {
           >
             Sign In With Goggle
           </Link>
+          <Link
+            className="bg-green-600 text-white rounded-xl mt-6 py-3.5 px-8 text-left"
+            href="/api/auth/yandex/login"
+          >
+            Sign In With Yandex
+          </Link>
         </>
       )}
     </div>

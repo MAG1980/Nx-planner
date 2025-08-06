@@ -27,6 +27,7 @@ import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { uuidv7 } from 'uuidv7';
+import { YandexAuthGuard } from '@api/auth/guards/yandex-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -159,9 +160,12 @@ export class AuthController {
     );
     console.log({ savedAccessToken });
 
-    // Редирект на внутренний эндпоинт NestJS,
-    // т.к. при перенаправлении тело ответа отбрасывается,
-    // а клиент ожидает получить accessToken именно в теле ответа.
+    // Редирект на Frontend, т. к. этого требует OAutn 2.0.
+    // При перенаправлении тело ответа отбрасывается,
+    // передавать accessToken в query-параметрах небезопасно,
+    // поэтому в query-параметрах клиенту передаётся tokenId,
+    // который используется для отправки асинхронных запросов на 'api/auth/oauth-callback'
+    // для получения accessToken в теле ответа.
     const frontendUrl = await this.configService.get<string>('FRONTEND_URL');
     return res.redirect(
       302,
@@ -169,6 +173,54 @@ export class AuthController {
     );
   }
 
+  @UseGuards(YandexAuthGuard)
+  @SkipAuth()
+  @Get('yandex/login')
+  yandexLogin() {
+    //Реализация не требуется, т.к. вся логика реализована в YandexStrategy, которую вызывает YandexAuthGuard
+  }
+
+  @UseGuards(YandexAuthGuard)
+  @SkipAuth()
+  @Get('yandex/callback')
+  async yandexCallback(
+    @Req() req: RequestUserPayload,
+    @Res({ passthrough: true }) res: Response
+  ): Promise<void> {
+    if (!req.user) {
+      throw new UnauthorizedException('Yandex authentication failed');
+    }
+
+    const { accessToken, refreshToken } = await this.authService.login(
+      req.user
+    );
+
+    this.setRefreshTokenCookie(res, refreshToken);
+
+    // Сохраняем токен во временное хранилище
+    const tokenId = uuidv7();
+    await this.cacheManager.set(`token:${tokenId}`, accessToken, 10000);
+
+    const savedAccessToken = await this.cacheManager.get<string>(
+      `token:${tokenId}`
+    );
+    console.log({ savedAccessToken });
+
+    // Редирект на Frontend, т. к. этого требует OAutn 2.0.
+    // При перенаправлении тело ответа отбрасывается,
+    // передавать accessToken в query-параметрах небезопасно,
+    // поэтому в query-параметрах клиенту передаётся tokenId,
+    // который используется для отправки асинхронных запросов на 'api/auth/oauth-callback'
+    // для получения accessToken в теле ответа.
+    const frontendUrl = await this.configService.get<string>('FRONTEND_URL');
+    return res.redirect(
+      302,
+      `${frontendUrl}/auth/oauth-success?tokenId=${tokenId}`
+    );
+  }
+
+  // По tokenId извлекает accessToken из кэш NestJS и отправляет егв теле ответа,
+  // как требует бизнес-логика Frontend.
   @SkipAuth()
   @Get('oauth-callback')
   async handleOAuthCallback(
