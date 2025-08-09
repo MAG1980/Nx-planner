@@ -26,7 +26,7 @@ export class YandexStrategy extends PassportStrategy(Strategy, 'yandex') {
     profile: Profile,
     done: (error: string | null, user: UserPayload) => void
   ) {
-    const { id, name, email } = await this.authService.validateYandexUser({
+    const { id, name, email } = await this.authService.validateOauthUser({
       email: profile.emails[0].value,
       name: `${profile.name.givenName} ${profile.name.familyName}`,
       password: '',

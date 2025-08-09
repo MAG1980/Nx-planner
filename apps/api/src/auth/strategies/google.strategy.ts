@@ -32,7 +32,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
   ) {
     //Если пользователь использует Google OAuth впервые, то получаем его данные из Google API и создаем нового пользователя
     //Если пользователь уже зарегистрирован в нашей БД с помощью Google OAuth, то возвращаем его
-    const { id, name, email } = await this.authService.validateGoogleUser({
+    const { id, name, email } = await this.authService.validateOauthUser({
       email: profile.emails[0].value,
       name: profile.displayName,
       password: '',

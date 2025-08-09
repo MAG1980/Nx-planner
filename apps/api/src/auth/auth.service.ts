@@ -127,7 +127,7 @@ export class AuthService {
     return { sub: user.id, name: user.name, email: user.email };
   }
 
-  async validateGoogleUser(googleUser: CreateUserDto): Promise<UserData> {
+  async validateOauthUser(googleUser: CreateUserDto): Promise<UserData> {
     //Проверка на существование пользователя в БД
     const user = await this.usersService.findByEmail(googleUser.email);
     if (user) {
@@ -136,15 +136,5 @@ export class AuthService {
     }
     //Создаём и возвращаем нового пользователя, если он не был найден в БД
     return this.usersService.create(googleUser);
-  }
-
-  async validateYandexUser(yandexUser: CreateUserDto): Promise<UserData> {
-    const user = await this.usersService.findByEmail(yandexUser.email);
-    if (user) {
-      console.log({ user });
-      return user;
-    }
-
-    return this.usersService.create(yandexUser);
   }
 }
