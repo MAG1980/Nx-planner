@@ -134,7 +134,7 @@ export class AuthController {
 
   @UseGuards(GoogleAuthGuard)
   @SkipAuth()
-  @Get('google/callback')
+  @Get('google/redirect-uri')
   //На данном этапе перед доступом к этому маршруту в GoogleStrategy будет вызываться метод 'validate'
   //Получает данные от Google OAuth
   async googleCallback(
@@ -182,7 +182,7 @@ export class AuthController {
 
   @UseGuards(YandexAuthGuard)
   @SkipAuth()
-  @Get('yandex/callback')
+  @Get('yandex/redirect-uri')
   async yandexCallback(
     @Req() req: RequestUserPayload,
     @Res({ passthrough: true }) res: Response
